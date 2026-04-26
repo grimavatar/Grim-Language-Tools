@@ -1,7 +1,7 @@
 import numpy as np
 import soundfile as sf
 from pathlib import Path
-from resample import resample
+from .resample import resample
 
 
 def load_audio(audio: str | Path | tuple[np.ndarray, int], target_sr: int = None) -> np.ndarray:
