@@ -22,6 +22,7 @@ def get_duration(audio: str | Path | tuple[np.ndarray, int]) -> float:
     wav, sr = load_audio(audio)
     return wav.shape[0] / sr
 
+
 def get_max_duration(audio: list[str | Path | tuple[np.ndarray, int]]) -> float:
     if not isinstance(audio, list):
         audio = [audio]
