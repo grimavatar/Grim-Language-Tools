@@ -1,10 +1,20 @@
+# For more examples on silence segmentation
 # https://github.com/openvpi/audio-slicer/blob/main/slicer2.py
 
+
+try:
+    # PyDub is no longer actively maintained
+    # so there are compatibility issues with newer Python versions
+    from pydub import AudioSegment
+    from pydub.silence import detect_silence
+    IS_PYDUB_ALLOWED = True
+except:
+    IS_PYDUB_ALLOWED = False
 
 import librosa
 import numpy as np
 from typing import Callable, Union
-from fade import apply_hann_edge
+from .fade import apply_hann_edge
 
 
 def _signal_to_frame_nonsilent(
@@ -159,9 +169,6 @@ def split_silent_pydub(
         ``intervals[i] == (start_i, end_i)`` are the start and end time
         (in samples) of silent interval ``i``.
     """
-
-    from pydub import AudioSegment
-    from pydub.silence import detect_silence
     
     # _to_sr = lambda ms, sr: int(ms * sr / 1000)
     _to_sr = lambda ms, sr: int(round(ms * sr / 1000))
@@ -203,7 +210,7 @@ class EvaluateSilence:
             seek_step = int(seek_step),
             top_db = int(abs(top_db)),
         )
-        if pydub:
+        if IS_PYDUB_ALLOWED and pydub:
             print("Using PyDub...")
             self.intervals = split_silent_pydub(**common_kwargs)
         else:
