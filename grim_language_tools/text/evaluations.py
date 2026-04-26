@@ -1,5 +1,5 @@
 import math
-from utils import classify_text_end
+from .utils import classify_text_end
 
 
 def round_secs(value: float) -> float:
