@@ -15,6 +15,7 @@ import librosa
 import numpy as np
 from typing import Callable, Union
 from .fade import apply_hann_edge
+from ..text.utils import classify_text_end
 
 
 def _signal_to_frame_nonsilent(
