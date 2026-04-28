@@ -125,7 +125,7 @@ def compare_texts(src_text: str, tgt_text: str) -> bool:
 
 # https://github.com/jitsi/jiwer
 # https://github.com/emorynlp/align4d
-def align_to_source_v1(src_text: str, alignment: list[dict]) -> list[dict] | None:
+def _align_to_source_v1(src_text: str, alignment: list[dict]) -> list[dict] | None:
     def normalize(w: str) -> str:
         return "".join(c for c in w.lower() if c.isalnum())
 
@@ -176,7 +176,7 @@ def align_to_source_v1(src_text: str, alignment: list[dict]) -> list[dict] | Non
     return result
 
 
-def align_to_source_v2(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2) -> list[dict] | None:
+def _align_to_source_v2(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2) -> list[dict] | None:
 
     def is_strong_overlap(a: str, b: str, length_error: int) -> bool:
         return (
@@ -254,9 +254,9 @@ def align_to_source_v2(src_text: str, alignment: list[dict], length_error: int =
 
 def align_to_source(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2, stable: bool = False) -> list[dict] | None:
     if stable:
-        return align_to_source_v1(src_text, alignment)
+        return _align_to_source_v1(src_text, alignment)
     else:
-        return align_to_source_v2(src_text, alignment, length_error, max_errors)
+        return _align_to_source_v2(src_text, alignment, length_error, max_errors)
 
 
 def pass_asr_test(src_text: str, alignment: list[dict]) -> bool:
