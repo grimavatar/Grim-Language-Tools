@@ -1,4 +1,5 @@
 import math
+import difflib
 from .utils import classify_text_end
 
 
@@ -124,7 +125,7 @@ def compare_texts(src_text: str, tgt_text: str) -> bool:
 
 # https://github.com/jitsi/jiwer
 # https://github.com/emorynlp/align4d
-def align_to_source(src_text: str, alignment: list[dict]) -> list[dict] | None:
+def align_to_source_v1(src_text: str, alignment: list[dict]) -> list[dict] | None:
     def normalize(w: str) -> str:
         return "".join(c for c in w.lower() if c.isalnum())
 
@@ -173,6 +174,89 @@ def align_to_source(src_text: str, alignment: list[dict]) -> list[dict] | None:
         raise ValueError("Implementation error.")
 
     return result
+
+
+def align_to_source_v2(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2) -> list[dict] | None:
+
+    def is_strong_overlap(a: str, b: str, length_error: int) -> bool:
+        return (
+            a.startswith(b) or a.endswith(b) or
+            b.startswith(a) or b.endswith(a)
+        ) and abs(len(a) - len(b)) <= length_error
+
+    def normalize(w: str) -> str:
+        text = "".join(c if c.isalnum() else " " for c in w.lower())
+        return " ".join(text.split())
+
+    alignment = [e for e in alignment if e["word"].strip()]
+    src_words = src_text.split()
+    tgt_words = [e["word"] for e in alignment]
+
+    src_norm = [normalize(w) for w in src_words]
+    tgt_norm = [normalize(w) for w in tgt_words]
+    # print(src_norm)
+    # print(tgt_norm)
+
+    # Word-level diff on normalized forms
+    matcher = difflib.SequenceMatcher(None, src_norm, tgt_norm)
+    result = []
+    errors = 0
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        # print(tag, i1, i2, j1, j2)
+
+        # If counts match, assume ordered 1:1 mapping.
+        # Otherwise, matcherear the whole block's time across the source words.
+        is_1_to_1 = (j2 - j1) == (i2 - i1)
+        if j1 == j2:  # delete event
+            start = end = result[-1]["end"] if result else 0.0
+        else:
+            start = alignment[j1]["start"]
+            end = alignment[j2 - 1]["end"]
+
+        src_group = []
+        tgt_group = alignment[j1:j2]
+        for offset, si in enumerate(range(i1, i2)):
+            tj = j1 + offset if j1 + offset < j2 else j2 - 1
+            src_group.append({
+                "word": src_words[si],
+                "start": alignment[tj]["start"] if is_1_to_1 else start,
+                "end": alignment[tj]["end"] if is_1_to_1 else end,
+            })
+        # print(src_group)
+        # print(tgt_group)
+        # print("---")
+
+        src_terms = [w for e in src_group for w in normalize(e["word"]).split()]
+        tgt_terms = [w for e in tgt_group for w in normalize(e["word"]).split()]
+        # print(src_terms)
+        # print(tgt_terms)
+        # print("---")
+
+        if len(src_terms) == len(tgt_terms):
+            for src_t, tgt_t in zip(src_terms, tgt_terms):
+                if src_t != tgt_t:
+                    errors += 1
+                # print(errors)
+                if not (errors <= max_errors and is_strong_overlap(src_t, tgt_t, length_error)):
+                    return None
+        else:
+            return None
+
+        result.extend(src_group)
+
+    # Sanity check
+    if [e["word"] for e in result] != src_words:
+        raise ValueError("Alignment produced unexpected word order")
+
+    return result
+
+
+def align_to_source(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2, stable: bool = False) -> list[dict] | None:
+    if stable:
+        return align_to_source_v1(src_text, alignment)
+    else:
+        return align_to_source_v2(src_text, alignment, length_error, max_errors)
 
 
 def pass_asr_test(src_text: str, alignment: list[dict]) -> bool:
