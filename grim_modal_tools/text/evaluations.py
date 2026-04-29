@@ -176,7 +176,7 @@ def _align_to_source_v1(src_text: str, alignment: list[dict]) -> list[dict] | No
     return result
 
 
-def _align_to_source_v2(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2) -> list[dict] | None:
+def _align_to_source_v2(src_text: str, alignment: list[dict], length_error: int = 1, max_errors: int = 1) -> list[dict] | None:
 
     def is_strong_overlap(a: str, b: str, length_error: int) -> bool:
         return (
@@ -252,11 +252,25 @@ def _align_to_source_v2(src_text: str, alignment: list[dict], length_error: int 
     return result
 
 
-def align_to_source(src_text: str, alignment: list[dict], length_error: int = 2, max_errors: int = 2, stable: bool = False) -> list[dict] | None:
+def align_to_source(src_text: str, alignment: list[dict], length_error: int = 1, max_errors: int = 1, stable: bool = False) -> list[dict] | None:
     if stable:
         return _align_to_source_v1(src_text, alignment)
     else:
         return _align_to_source_v2(src_text, alignment, length_error, max_errors)
+
+
+def align_to_source_w_test(src_text, alignment, audio_path):
+    import orjson
+    from pathlib import Path
+    alignment_v1 = align_to_source(src_text, alignment, stable = True)
+    alignment_v2 = align_to_source(src_text, alignment, stable = False)
+    if alignment_v1 != alignment_v2:
+        output_path = Path(audio_path).with_suffix(".json")
+        output_path = output_path.parent / f"{output_path.parent.name}_{output_path.name}"
+        with open(output_path, "wb") as f:
+            data = {"src_text": src_text, "alignment": alignment}
+            f.write(orjson.dumps(data))
+    return alignment_v2
 
 
 def pass_asr_test(src_text: str, alignment: list[dict]) -> bool:
