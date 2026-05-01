@@ -24,10 +24,11 @@ def classify_text_end(text: str) -> tuple[bool, bool, bool]:
 def segment_text(text: str, min_units: int = 2) -> list[str]:
     text = text.replace(" —", "—").replace("—", "— ")
     segments, units = [], []
-    for word in text.split():
+    text = sanitize_spaces(text)
+    for word in text.split(" "):
         units.append(word)
         _, is_clause, is_sent = classify_text_end(word)
-        if is_sent or (is_clause and len(units) >= min_units):
+        if is_sent or (is_clause and len(units) >= min_units) or word.endswith("\n"):
             segments.append(" ".join(units))
             units = []
     return segments
@@ -35,6 +36,10 @@ def segment_text(text: str, min_units: int = 2) -> list[str]:
 
 def normalize_spaces(text: str) -> str:
     return "".join(" " if e.isspace() and e != "\n" else e for e in text.strip())
+
+
+def sanitize_spaces(text: str) -> str:
+    return "\n".join(x for e in text.split("\n") if (x := " ".join(e.split())))
 
 
 def normalize_punctuation(text: str) -> str:
@@ -97,13 +102,13 @@ def normalize_punctuation(text: str) -> str:
 
 
 def normalize_text(text: str, fix_punc: bool = True) -> str:
-    text = normalize_spaces(text)  # First-pass
+    text = sanitize_spaces(text)  # First-pass
     
     if fix_punc and not any([text.endswith(c) for c in [".", "!", "?", ",", ";", '"', "'"]]):
         text += "."
     
     text = normalize_punctuation(text)
-    text = normalize_spaces(text)  # Second-pass
+    text = sanitize_spaces(text)  # Second-pass
 
     return text
 
