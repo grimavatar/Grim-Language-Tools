@@ -5,3 +5,4 @@ soxr
 pydub
 orjson
 anyascii
+pysubs2==1.7.3
