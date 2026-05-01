@@ -25,14 +25,17 @@ def segment_text(text: str, min_units: int = 2) -> list[str]:
     text = text.replace(" —", "—").replace("—", "— ")
     segments, units = [], []
     text = sanitize_spaces(text)
-    for word in text.split(" "):
-        units.append(word)
-        _, is_clause, is_sent = classify_text_end(word)
-        if is_sent or (is_clause and len(units) >= min_units) or word.endswith("\n"):
-            segment = " ".join(units)
-            if segment.strip():
-                segments.append(segment)
-            units = []
+    for line in text.split("\n"):
+        words = line.split(" ")
+        total_i = len(words)-1
+        for i, word in enumerate(words):
+            units.append(word)
+            _, is_clause, is_sent = classify_text_end(word)
+            if is_sent or (is_clause and len(units) >= min_units) or i == total_i:
+                segment = " ".join(units)
+                if segment.strip():
+                    segments.append(segment)
+                units = []
     return segments
 
 
