@@ -21,6 +21,18 @@ def classify_text_end(text: str) -> tuple[bool, bool, bool]:
         return False, True, False
 
 
+def segment_text(text: str, min_units: int = 2) -> list[str]:
+    text = text.replace(" —", "—").replace("—", "— ")
+    segments, units = [], []
+    for word in text.split():
+        units.append(word)
+        _, is_clause, is_sent = classify_text_end(word)
+        if is_sent or (is_clause and len(units) >= min_units):
+            segments.append(" ".join(units))
+            units = []
+    return segments
+
+
 def normalize_spaces(text: str) -> str:
     return "".join(" " if e.isspace() and e != "\n" else e for e in text.strip())
 
