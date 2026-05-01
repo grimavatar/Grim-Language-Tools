@@ -29,7 +29,8 @@ def segment_text(text: str, min_units: int = 2) -> list[str]:
         units.append(word)
         _, is_clause, is_sent = classify_text_end(word)
         if is_sent or (is_clause and len(units) >= min_units) or word.endswith("\n"):
-            segments.append(" ".join(units))
+            if units.strip():
+                segments.append(" ".join(units))
             units = []
     return segments
 
