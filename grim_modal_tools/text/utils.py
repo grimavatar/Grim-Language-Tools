@@ -96,10 +96,10 @@ def normalize_punctuation(text: str) -> str:
     return text
 
 
-def normalize_text(text: str) -> str:
+def normalize_text(text: str, fix_punc: bool = True) -> str:
     text = normalize_spaces(text)  # First-pass
     
-    if not any([text.endswith(c) for c in [".", "!", "?", ",", ";", '"', "'"]]):
+    if fix_punc and not any([text.endswith(c) for c in [".", "!", "?", ",", ";", '"', "'"]]):
         text += "."
     
     text = normalize_punctuation(text)
@@ -110,6 +110,7 @@ def normalize_text(text: str) -> str:
 
 def prepare_text(
     text: str,
+    fix_punc: bool = True,
 ):
     if os.path.exists(text):
         with open(text, "rt", encoding = "utf-8") as f:
@@ -122,7 +123,7 @@ def prepare_text(
     for section in sections:
         lines = split_text(section)
         for i, line in enumerate(lines):
-            lines[i] = normalize_text(line)
+            lines[i] = normalize_text(line, fix_punc = fix_punc)
         texts.append(lines)
     
     return texts
