@@ -21,7 +21,7 @@ def classify_text_end(text: str) -> tuple[bool, bool, bool]:
         return False, True, False
 
 
-def segment_text(text: str, min_units: int = 2) -> list[str]:
+def segment_text(text: str, min_chars: int = 32) -> list[str]:
     text = text.replace(" —", "—").replace("—", "— ")
     segments, units = [], []
     text = sanitize_spaces(text)
@@ -31,8 +31,8 @@ def segment_text(text: str, min_units: int = 2) -> list[str]:
         for i, word in enumerate(words):
             units.append(word)
             _, is_clause, is_sent = classify_text_end(word)
-            if is_sent or (is_clause and len(units) >= min_units) or i == total_i:
-                segment = " ".join(units)
+            segment = " ".join(units)
+            if i == total_i or is_sent or (is_clause and len(segment) >= min_chars):
                 if segment.strip():
                     segments.append(segment)
                 units = []
