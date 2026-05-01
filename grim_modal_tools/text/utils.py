@@ -109,11 +109,12 @@ def normalize_punctuation(text: str) -> str:
 def normalize_text(text: str, fix_punc: bool = True) -> str:
     text = sanitize_spaces(text)  # First-pass
     
-    if fix_punc and not any([text.endswith(c) for c in [".", "!", "?", ",", ";", '"', "'"]]):
-        text += "."
+    if fix_punc:
+        if not any([text.endswith(c) for c in [".", "!", "?", ",", ";", '"', "'"]]):
+            text += "."
     
-    text = normalize_punctuation(text)
-    text = sanitize_spaces(text)  # Second-pass
+        text = normalize_punctuation(text)
+        text = sanitize_spaces(text)  # Second-pass
 
     return text
 
