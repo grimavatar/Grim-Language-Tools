@@ -8,13 +8,14 @@ TRAILING_CLOSERS = "\"'”’)]}"
 
 def classify_text_end(text: str) -> tuple[bool, bool, bool]:
     """Returns tuple[is_pause, is_clause, is_sent]"""
-    if not text or text[-1].isalnum():
+    if not text:
         return True, False, False
+    
     last_word = text.split()[-1].rstrip(TRAILING_CLOSERS).lower()
-    if not last_word or last_word in PUNC_END_EXCEPTIONS:
+    last_char = last_word[-1:]
+    if not last_char or last_char.isalnum() or last_word in PUNC_END_EXCEPTIONS:
         return True, False, False
 
-    last_char = last_word[-1]
     if last_char in ".?!":
         return False, False, True
     else:
