@@ -22,21 +22,43 @@ def classify_text_end(text: str) -> tuple[bool, bool, bool]:
         return False, True, False
 
 
-def segment_text(text: str, min_chars: int = 32) -> list[str]:
+def segment_text(text: str, max_chars: int = 42) -> list[str]:
     text = text.replace(" —", "—").replace("—", "— ")
     segments, units = [], []
     text = sanitize_spaces(text)
+    
     for line in text.split("\n"):
         words = line.split(" ")
-        total_i = len(words)-1
+        total_i = len(words) - 1
+        last_clause_idx = -1  # Tracks the position of the last clause in `units`
+        
         for i, word in enumerate(words):
             units.append(word)
             _, is_clause, is_sent = classify_text_end(word)
+            is_sent = is_sent or i == total_i  # Make the line end the same as a sentence end
             segment = " ".join(units)
-            if i == total_i or is_sent or (is_clause and len(segment) >= min_chars):
+
+            # If we hit a punctuation mark, check if we need to split at the previous clause
+            if is_clause or is_sent:
+                if len(segment) > max_chars and last_clause_idx != -1:
+                    # Add up to the previous clause
+                    segment = " ".join(units[:last_clause_idx + 1])
+                    segments.append(segment)
+                    # Keep the remaining words
+                    units = units[last_clause_idx + 1:]
+                    segment = " ".join(units)
+                
+                # Update the last clause index to its new relative position
+                if is_clause:
+                    last_clause_idx = len(units) - 1
+
+            # Flush the remaining segment if it's a sentence end
+            if is_sent:
                 if segment.strip():
                     segments.append(segment)
                 units = []
+                last_clause_idx = -1
+                
     return segments
 
 
