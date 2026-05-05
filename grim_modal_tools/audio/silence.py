@@ -252,13 +252,13 @@ def samples_to_db(y: np.ndarray, db_floor: int = -145):
     return 20 * np.log10(np.maximum(np.abs(y), eps))
 
 
-# def samples_to_rms_db(y: np.ndarray, sr: int, window_ms: int = 10, db_floor: int = -145):
-#     """Converts waveform to smoothed RMS dB"""
-#     window_size = max(1, int(sr * window_ms / 1000))
-#     window = np.ones(window_size) / window_size
-#     power_env = np.convolve(y ** 2, window, mode = "same")
-#     rms_env = np.sqrt(np.maximum(power_env, 0))
-#     return samples_to_db(rms_env, db_floor)
+def samples_to_rms_db(y: np.ndarray, sr: int, window_ms: int = 10, db_floor: int = -145):
+    """Converts waveform to smoothed RMS dB"""
+    window_size = max(1, int(sr * window_ms / 1000))
+    window = np.ones(window_size) / window_size
+    power_env = np.convolve(y ** 2, window, mode = "same")
+    rms_env = np.sqrt(np.maximum(power_env, 0))
+    return samples_to_db(rms_env, db_floor)
 # def find_true_boundary(y, end, start, sr = None, threshold_db = None):
 #     if start <= end:
 #         return end, start
