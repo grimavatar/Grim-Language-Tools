@@ -1,4 +1,5 @@
 import os
+import hashlib
 
 
 # from spacy.lang.en.tokenizer_exceptions import TOKENIZER_EXCEPTIONS as PUNC_END_EXCEPTIONS
@@ -161,3 +162,8 @@ def prepare_text(
         texts.append(lines)
     
     return texts
+
+
+def hash_text(text: str) -> str:
+    hash_object = hashlib.sha256(text.encode())
+    return hash_object.hexdigest()
