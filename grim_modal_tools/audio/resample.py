@@ -51,11 +51,15 @@ def cli_resample(input_path: str, target_sr: int, replace: bool = False) -> str:
 
 
 if __name__ == "__main__":
-    target_sr = 24000
 
     input_path = "audio"
 
     if len(sys.argv) > 1 and sys.argv[1].strip():
         input_path = sys.argv[1].strip()
+
+    target_sr = 24000
+
+    if len(sys.argv) == 3 and sys.argv[2].strip():
+        target_sr = int(round(float(sys.argv[2].strip()) * 1000))
 
     cli_resample(input_path, target_sr)
